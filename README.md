@@ -9,4 +9,8 @@ I was thinking about OnePython or PyWorld or something like that for the name of
 
 [Main Wiki Page](https://github.com/billbreit/hello-world/wiki)
 
+In the meantime, I've added a working version of bitbuddy.py, for debugging binary logic apps.  See readme.
+
+Is there a way to add a #micropython tag to a project ?  There must be ... much to learn about GitHub.
+
 
