@@ -8,7 +8,7 @@ to help me learn about GitHub projects.  My focal areas are:
 - Cross-Python libraries, include micropython, some Circuit Python and
   any other worthy Python dialect.
 
-The first example is Bit Buddy, a ones-complement wrapper in a 
+The first example is Bit Buddy (?), a ones-complement wrapper in a 
 two-complement world - for debugging, not deployment.  The development 
 phase is maybe early beta.
 
@@ -21,12 +21,12 @@ terminal, change directory to bitbuddy.py and run:
 python bitbuddy.py
 
 On the Pico using gc.mem_free, the basic classes and functions consume
-about 1.6K ( to the sart of the test script ) .  The entire test script
+about 1.6K ( to the start of the test script ) .  The entire test script
 consumes about 20K ( total memory at the end of the script).
 
-I'm kind of laughing at myself.  I thought there was only one Python app
+Note: I'm kind of laughing at myself.  I thought there was only one Python app
 called "bitbuddy", with no activity in ten years.  I found the topic search
-page and discover about 30 of them.  How about 'bitfandango' or 'bangmybits'
+page and discovered about 30 of them.  Maybe 'bitfandango' or 'bangmybits'
 or almost anything other than 'bitbuddy' ? :-)  
 
 https://gitgub.com/billbreit/hello-world
