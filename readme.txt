@@ -24,6 +24,10 @@ On the Pico using gc.mem_free, the basic classes and functions consume
 about 1.6K ( to the sart of the test script ) .  The entire test script
 consumes about 20K ( total memory at the end of the script).
 
+I'm kind of laughing at myself.  I thought there was only one Python app
+called "bitbuddy", with no activity in ten years.  I found the topic search
+page and discover about 30 of them.  How about 'bitfandango' or 'bangmybits'
+or almost anything other than 'bitbuddy' ? :-)  
 
 https://gitgub.com/billbreit/hello-world
 
