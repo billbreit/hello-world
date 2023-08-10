@@ -1,7 +1,7 @@
 
 """
 
-Bit Buddy
+Bit Logic
 
 Ones-complement wrapper for Python standard twos-complement logic,
 mostly useful for debugging and displaying an int or BitInt in
@@ -9,26 +9,23 @@ binary form, and learning about the binary integer approach to logic.
 
 Runs on Python 3.9 and micropython v1.20.0 on a Pico.
 
-Note: There is another Python project called 'bitbuddy', but it hasn't
-  seen any activity in 10 years so I'm grabbing the name.
-
 module:
-bitbuddy
+  bitlogic
 
 version:
-about 0.3
+  v0.3.1
 
 sourcecode:
-https://github/billbreit/hello-world
+  https://github/billbreit/hello-world
 
 copyleft:
-2023 by Bill Breitmayer
+  2023 by Bill Breitmayer
        
 licence:
-GNU GPL v3 or above
+  GNU GPL v3 or above
       
 author:
-Bill Breitmayer
+  Bill Breitmayer
     
 """
 
@@ -37,7 +34,7 @@ from math import log, floor, ceil
 try:
     from functools import partial
 except:
-    # Ported from the MicroPython library
+    # Ported to CircuitPython from the MicroPython library (?)
     def partial(func, *args, **kwargs):
         """Creates a partial of the function"""
 
@@ -47,17 +44,26 @@ except:
                 return func(*(args + more_args), **local_kwargs)
 
         return _partial
+    
+    """
+    # micropython community
+    def partial(func, *args, **kwargs):
+        def _partial(*more_args, **more_kwargs):
+            kw = kwargs.copy()
+            kw.update(more_kwargs)
+            return func(*(args + more_args), **kw)
+
+        return _partial
+    """
 
 
 nl = print
 DEBUG = False
 
 
-class BitBuddyError(Exception):
+class BitLogicError(Exception):
     pass
     
-
-
 class BitInt(object):
     """BitInt wraps an inner int with bitwise logical functions only,
        no arithmetic functions.  This class is mostly for debugging
@@ -68,7 +74,7 @@ class BitInt(object):
         super().__init__(*args, **kwargs)
 
         if an_integer <= ~0:
-            raise BitBuddyError('Negative values and `0 ( minus zero ) are not BitInt numbers.')
+            raise BitLogicError('Negative values and `0 ( minus zero ) are not BitInt numbers.')
 
         self._int = int(an_integer)
         
@@ -78,35 +84,21 @@ class BitInt(object):
             return other._int
         else:
             return int(other)
-
-
+            
     def __and__(self, other ):
         """Bitwise AND of x & y """
         return self._int & self.int(other)
             
-    def __iand__(self, other):
-        """x = iand(x, y) is equivalent to x &= y
-           Alters the vaule of underlying _int """
-        self._int &= self.int(other)
             
     def __or__(self, other):
         """Bitwise OR of x | y."""
         return self._int | self.int(other)
-            
-    def __ior__(self, other):
-        """x = ior(x, y) is equivalent to x |= y.
-           Alters the vaule of underlying _int """
-        self._int |= self.int(other)
+ 
         
     def __xor__(self, other):
         """Bitwise XOR of x ^ y, either x or y but not x & y"""
         return self._int ^ self.int(other)
             
-    def __ixor__(self, other):
-        """x = ixor(x, y) is equivalent to a ^= b.
-           Alters the vaule of underlying _int """
-        self_int ^= self.int(other)
-        
     def __invert__(self ):
         """Bitwise inverse ~x ( tilde x ) of the number x.
         
@@ -125,24 +117,43 @@ class BitInt(object):
         
         return invert(self._int) 
         
-    def __lshift__( self, offset):
+    def __lshift__( self, offset:int):
         """x shifted left by offset, x<< y."""
         return self._int << offset
+        
+    def __rshift__(self, offset:int):
+        """x shifted right by offset, x >> y."""
+        return self._int >> offset
+        
+    ''' i_funcs cause parsing errors. could implement but something
+        badly stateful lurks here ...
+        
+    def __iand__(self, other):
+        """x = iand(x, y) is equivalent to x &= y
+           Alters the vaule of underlying _int """
+        self._int &= self.int(other)
+        
+    def __ixor__(self, other):
+        """x = ixor(x, y) is equivalent to a ^= b.
+           Alters the vaule of underlying _int """
+        self_int ^= self.int(other)
         
     def __ilshift__(self, offset):
         """x = lshift(x, y) is equivalent to x <<= y.
            Alters the vaule of underlying _int """
         self._int <<= offset
         
-    def __rshift__(self, offset):
-        """x shifted right by offset, x >> y."""
-        return self._int >> offset
+    def __ior__(self, other):
+        """x = ior(x, y) is equivalent to x |= y.
+           Alters the vaule of underlying _int """
+        self._int |= self.int(other)
         
     def __irshift__( self, offset):
         """x = rshift(x, y) is equivalent to x >>= y.
            Alters the vaule of underlying _int """
         self._int >>= offset
-                    
+        
+        '''
 
     def __iter__(self):
         """Returns a list of 1/0 values representing the sequence of bits set
@@ -159,27 +170,30 @@ class BitInt(object):
                 print(numb)
                 
                 will recover the int(11).
-        
              
          """ 
 
         # print('iter- for self ', self)
         # print('iter- bin(self) ', bin(self))
         # print('iter- bit_length ', self.bit_length)
-        nl()
+        # nl()
 
         for bindex in range(self.bit_length):
         
             # print('iter- bindex ', bindex)
-            test = pow( 2, bindex ) & self
+            test = pow( 2, bindex ) & self._int
             if test == 0:
-                    yield 0
+                yield 0
             else:
-                        yield 1
+                yield 1
+                
+    @property
+    def value(self):
+        return self._int
                             
     @property
     def bit_length( self ):
-        return bit_length(self)
+        return bit_length(self._int)
             
     @property
     def num_bits_set(self):
@@ -193,8 +207,6 @@ class BitInt(object):
     def bin(self):
         return bin(self._int)
                             
-                    
-            
 bitint = BitInt 
 
 
@@ -216,10 +228,10 @@ class BitList( list ):
             max_len = max([ bit_length(i) for i in self ]) 
             return max(max_len, 1)           
     
-    def make_bit_mask( self ):
+    def make_bitmask( self ):
         """ Bit_mask of binary ones with max length in collection
                 of 'binary' ints. Inverting leading 0 to 1 is significant."""
-        # return int(str( '1'* self.max_length), base=2)
+        # return int(str( '1'* self.max_length), base=2)  crashes micropython, no base kw
         return int(str( '1'* self.max_length), 2)
     
     def form( self, x:int ):
@@ -232,7 +244,7 @@ class BitList( list ):
 bitlist = BitList
 
 
-def zfill(x, maxlen=None):
+def zfill(x:int, maxlen=None):
     """ Make string of 1/0 for int x, filling zeros to left.
             For upython, dumb but nails it and can also work as
             zfill of last resort."""
@@ -241,17 +253,14 @@ def zfill(x, maxlen=None):
     
     s = []
     for i in range(maxlen):
-            if x << i == 0:
-                    s.insert(0, '0')
-            else:
-                    s.insert(0, '1') 
+        if x << i == 0:
+            s.insert(0, '0')
+        else:
+            s.insert(0, '1') 
                      
     return ''.join(s)
-                                    
-                                    
 
-
-def bit_length( bint ):
+def bit_length( bint:int ):
     """ bint is binary view of int.
             For bitmask purposes, a zero is FALSE
             and not just no value and has length 1.
@@ -269,21 +278,27 @@ def bit_length( bint ):
     return ceil(lb)
 
 
-def make_bit_mask( x:int, blength=1 ):
-    """Need to partial make_bit_mask with max length of collection
+def make_bitmask( blength=1 ):
+    """Need to partial make_bitmask with max length of collection
        of 'binary' ints."""
-    return int(str( '1'* max(bit_length(x), blength)), 2)
+       
+    return int(str( '1'* max(blength, 1)), 2)
+    
+def make_bitmask_for( x:int ):
+
+    return make_bitmask(bit_length(x))
+
 
 def bform( x:int, maxblen=None ):
     """Formatter for bitint types, with maxblen option."""
-    # print('bform ', x, maxblen ) 
+    # print('bform ', x, maxblen )
+    maxblen = maxblen or bit_length(x)
     try:
             return format(x, 'b').zfill(maxblen or x.bit_length())
     except: # upython
             return zfill(x, maxblen)
 
-
-""" Comparison of Bitwise Integers"""
+""" Functions to Compare Bitwise Integers"""
 
 
 """ Possible for the log func to blow up with large numbers, 2^1000 or so ?"""
@@ -330,7 +345,7 @@ def invert( x:int ):
     if x == ~0: return 0
     if x == 0: return 1
     
-    return x ^ make_bit_mask(x)
+    return x ^ make_bitmask_for(x)
 
 
 if __name__=='__main__':
@@ -338,19 +353,19 @@ if __name__=='__main__':
     nl()
     nl()
     print('==================================')
-    print("=== Test Script for 'bitbuddy' ===")
+    print("=== Test Script for 'BitLogic' ===")
     print('==================================')
     nl()
     
     def bit_info(bint):
             print('bint ', bint)
             print('type(bint) ', type(bint))
+            print('bint.value ', bint.value)
             print('bint.bin ', bint.bin)
             print('bint.bit_length ', bint.bit_length)
             print('bint.num_bits_set ', bint.num_bits_set)
             nl()
-    
-    
+     
     nl()
     print('=== Test BitInt Class ===')
     nl()
@@ -373,11 +388,11 @@ if __name__=='__main__':
     print('bi and itest ', bi.bin, itest.bin)
     nl()
     
-    print('bi & itest', bi & itest)
-    print('bi | itest', bi | itest)
-    print('bi ^ itest', bi ^ itest, bin(56))
-    print('bi << 1 ', bi << 1, bin(50))
-    print('bi >> 1 ', bi >> 1, bin(12))
+    print('bi & itest  ', bi & itest, bin(bi & itest))
+    print('bi | itest  ', bi | itest, bin(bi | itest))
+    print('bi ^ itest  ', bi ^ itest, bin(bi ^ itest))
+    print('bi << 1     ', bi << 1,    bin(bi << 1))
+    print('bi >> 1     ', bi >> 1,    bin(bi >> 1))
     nl()
     
     print('Test destructive dunder methods')
@@ -398,8 +413,7 @@ if __name__=='__main__':
     nl()
     bi = bitint(25)
     """
-
-    
+   
     bit_info(bitint(0))
     bit_info(bitint(255))
     bit_info(bitint(333315))
@@ -419,24 +433,22 @@ if __name__=='__main__':
     
     try:
         x = bitint(-1 )
-    except BitBuddyError as e:
+    except BitLogicError as e:
         print(e)
         nl()
-    
     
     print('try x = bitint(-111)  ')
 
     try:
         x = bitint(-111 )
-    except BitBuddyError as e:
+    except BitLogicError as e:
         print(e)
         nl()
     else:
         print('No Error')
         nl()
-    
 
-    print('Test for bi.__iter__')
+    print('Test for BitInt method bi.__iter__')
     nl()
     print('bin(bi) ', bi.bin)
     print('bi.bit_length ', bi.bit_length)
@@ -448,7 +460,8 @@ if __name__=='__main__':
     
     ilist = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight' ]
     
-    print('Mapping BigInt to a list', ilist)
+    print('Using BigInt to map into a list', ilist)
+    nl()
     
     o = int(0b01010101)
     e = int(0b10101010)
@@ -457,19 +470,16 @@ if __name__=='__main__':
     even_index = bitint( e )
     
     print('odd_index ', odd_index, '  ', odd_index.bin)
-    print('even_index ', even_index, even_index.bin)
+    print('even_index ', even_index, '  ', even_index.bin)
+    nl()
     print('Note the bit lengths of odd and even are ', odd_index.bit_length, even_index.bit_length)  
     print('odd_index.num_bits_set  ',  odd_index.num_bits_set)
     print('even_index.num_bits_set ',  even_index.num_bits_set)
     nl()
-    
-    xx = odd_index.num_bits_set
-    print('xx ', xx)
-    print('xx ', type(xx))
-    nl()
-    
 
-    print('Use iter(odd_index) ', odd_index.bin ,' to fetch odds from list') 
+    nl()
+
+    print('Using iter(odd_index) ', odd_index.bin ,' to fetch odds from list') 
     nl()
     
     olist = []
@@ -479,7 +489,7 @@ if __name__=='__main__':
                 olist.append(ilist[i])
     nl()
                     
-    print('Use iter(even_index) ', even_index.bin, ' to fetch evens from list') 
+    print('Using iter(even_index) ', even_index.bin, ' to fetch evens from list') 
     nl()
             
     elist = []      
@@ -488,71 +498,89 @@ if __name__=='__main__':
         if v == 1:
                 elist.append(ilist[i])
     nl()
-                    
-            
+                
     print('odds ', olist)
     print('evens ', elist)
     nl()
+    
+   
+    print('=== bitlist class and bform ===')
+    nl()
+    
+    a = int(0b11101100000111)
+    b = int(0b10000000000000)
+    c = int(0b10100000000100)
+    d = int(0b00001111000000)
+    o = int(0b00000000000001)
+    z = int(0b00000000000000)
+
+    blist = bitlist( [z, z, z, z] )
+    print('blist ', blist )
+    print('blist max_length: ', blist.max_length)
+    print('blist make_bitmask: ', blist.form(blist.make_bitmask()))
+    nl()
+
+
+
+    blist = bitlist( [a, b, c, d] )
+    print('new blist ', blist )     
+    print('blist max_length: ', blist.max_length)
+    print('blist make_bitmask: ', blist.form(blist.make_bitmask()))
+    nl()
+    
+    print('bbform, bform partialled to length blist.max_length')
+    nl()
+    bbform = partial( bform, maxblen=blist.max_length)
+    for i, bint in enumerate(blist):
+        print('slot', i, ' = ', bbform(bint))
+    nl()
+
+    print('bform with some manipulations.')
+    nl()
+    print('bform(int)            ', bform(int(0b0101011101111001110001110)))
+    print('bform(invert(int, 24) ', bform(invert(int(0b0101011101111001110001110)), 24), '   length 24')
+    print('bform(invert(int)     ', bform(invert(int(0b0101011101111001110001110))), '    length becomes 23')
+    nl()
+    print('Not working with CircuitPython, bad partial function ? ')
+
+    pmake_bit_mask = partial( make_bitmask, blength=blist.max_length) 
+    
+
+    nl()
+    nl()
 
     
-    
-    print('Functions')
+    print('=== Functions ===')
     nl()
     a = int(0b11101100000111)
     b = int(0b10000000000000)
-    c = int(0b11100000000000)
+    c = int(0b10100000000100)
     d = int(0b00001111000000)
     o = int(0b00000000000001)
     z = int(0b00000000000000)
     
     print('bit_length')
     nl()
-    print('bit_length a: ', bit_length(a))
-    print('bit_length b: ', bit_length(b))
-    print('bit_length c: ', bit_length(c))
-    print('bit_length d: ', bit_length(d))
-    print('bit_length z: ', bit_length(z))
-    print('bit_length 4.3: ', bit_length(4.3))
+    
+    bbform = partial( bform, maxblen=16)
+    
+    print('Using bbform partialled to length 16')
+    nl()
+    print('a: ', bbform(a), '  bit_length(a) ', bit_length(a))
+    print('b: ', bbform(b), '  bit_length(b) ', bit_length(b))
+    print('c: ', bbform(c), '  bit_length(c) ', bit_length(c))
+    print('d: ', bbform(d), '  bit_length(d) ', bit_length(d))
+    print('o: ', bbform(o), '  bit_length(o) ', bit_length(o))
+    print('z: ', bbform(z), '  bit_length(z) ', bit_length(z))
+    nl()
+    
+    print('bit_length 4.3:  ', bit_length(4.3))
     print('bit_length None: ', bit_length(None))
     nl()
-    
-    print('bitlist class ')
-    nl()
 
-    blist = bitlist( [z, z, z, z] )
-    print('blist ', blist )
-    print('blist max_length: ', blist.max_length)
-    print('blist make_bit_mask: ', blist.form(blist.make_bit_mask()))
-    nl()
-
-    bbform = partial( bform, maxblen=blist.max_length) 
-    
-    print('new blist ', blist )  
-
-    blist = bitlist( [a, b, c, d] )
-    print('new blist ', blist )     
-    print('blist max_length: ', blist.max_length)
-    print('blist make_bit_mask: ', blist.form(blist.make_bit_mask()))
-    nl()
-
-    bbform = partial( bform, maxblen=22)
-    
-    nl()
-    print('bbform - partial bform ', bbform)
-
-    pmake_bit_mask = partial( make_bit_mask, blength=blist.max_length) 
-    nl()
-    print('bbform(22)')
-    nl()
-    print('a: ', bbform(a))
-    print('b: ', bbform(b))
-    print('c: ', bbform(c))
-    print('d: ', bbform(d))
-    print('z: ', bbform(z))
-    nl()
-
+    print('bbform = partial( bform, maxblen=blist.max_length)')
     bbform = partial( bform, maxblen=blist.max_length)
-    pmake_bit_mask = partial( make_bit_mask, blength=blist.max_length)  
+    pmake_bit_mask = partial( make_bitmask, blength=blist.max_length)  
 
     nl()
     print('bbform(blist.max_length)')
@@ -561,6 +589,7 @@ if __name__=='__main__':
     print('b: ', bbform(b))
     print('c: ', bbform(c))
     print('d: ', bbform(d))
+    print('o: ', bbform(o))
     print('z: ', bbform(z))
     nl()
     
@@ -568,18 +597,20 @@ if __name__=='__main__':
     nl()
     print('one_of(b,a): ', one_of(b,a))
     print('one_of(d,a): ', one_of(d,a))
-    print('one_of(z,a): ', one_of(z,a))
+    print('one_of(o,a): ', one_of(o,a))
     print('one_of(a,a): ', one_of(a,a))
     print('one_of(b,b): ', one_of(b,b))
+    print('one_of(z,b): ', one_of(z,b))
     nl()
-    
+   
     print('morethanone_of x in  y, detect conflict') 
     nl()
     print('morethanone_of(b,a): ', morethanone_of(b,a))
     print('morethanone_of(d,a): ', morethanone_of(d,a))
-    print('morethanone_of(z,a): ', morethanone_of(z,a))
+    print('morethanone_of(o,a): ', morethanone_of(o,a))
     print('morethanone_of(a,a): ', morethanone_of(a,a))
     print('morethanone_of(b,b): ', morethanone_of(b,b))
+    print('morethanone_of(z,z): ', morethanone_of(z,z))
     nl()
     
     print('all_of x in y, logical AND ')
@@ -588,6 +619,7 @@ if __name__=='__main__':
     print('all_of(c,a): ', all_of(c,a))
     print('all_of(d,a): ', all_of(d,a))
     print('all_of(a,a): ', all_of(a,a))
+    print('all_of(o,a): ', all_of(o,a))
     print('all_of(z,z): ', all_of(z,z))
     nl()
     
@@ -595,6 +627,7 @@ if __name__=='__main__':
     nl()
     print('any_of(c,b): ', any_of(c,b))
     print('any_of(d,b): ', any_of(d,b))
+    print('any_of(o,d): ', any_of(o,d))
     print('any_of(a,a): ', any_of(a,a))
     print('any_of(z,a): ', any_of(z,a))
     print('any_of(z,z): ', any_of(z,z))
@@ -604,6 +637,7 @@ if __name__=='__main__':
     nl()
     print('none_of(d,c): ', none_of(d,c))      
     print('none_of(d,a): ', none_of(d,a))
+    print('none_of(o,a): ', none_of(o,a))
     print('none_of(a,a): ', none_of(a,a))
     print('none_of(z,a): ', none_of(z,a))
     print('none_of(z,z): ', none_of(z,z))
@@ -613,18 +647,19 @@ if __name__=='__main__':
     nl()
     print('diff(d,b): ', bbform(diff(d,b)))      
     print('diff(d,a): ', bbform(diff(d,a)))
+    print('diff(o,a): ', bbform(diff(o,a)))
     print('diff(a,a): ', bbform(diff(a,a)))
-    print('diff(z,a): ', bbform(diff(z,a)))
+    print('diff(z,a): ', bbform(diff(z,a)), '  compare to invert(a): ', bbform(invert(a)))
     print('diff(z,z): ', bbform(diff(z,z)))
     nl()
     print('match() returning int of matches, similar to all_of')
     nl()
     print('match(d,b): ', bbform(match(d,b)))      
     print('match(d,a): ', bbform(match(d,a)))
+    print('match(o,a): ', bbform(match(o,b)))
     print('match(a,a): ', bbform(match(a,a)))
     print('match(z,a): ', bbform(match(z,a)))
     nl()
-
     
     print('To Invert Or Not ')
     nl()
@@ -641,41 +676,43 @@ if __name__=='__main__':
     print('invert(a): ', bbform(invert(a)))
     print('b:         ', bbform(b))      
     print('invert(b): ', bbform(invert(b)))
+    print('o:         ', bbform(o))      
+    print('invert(o): ', bbform(invert(o)))
     print('z:         ', bbform(z)) 
     print('invert(z): ', bbform(invert(z)), 'pythonically wrong, but right for bitint or in blist')
     print('bool(invert(z)): ', bool(invert(z)))
     nl()
     
-    print('Compare ones to twos complement Python')
+    print('Comparing ones to twos complement Python')
     nl()
     print('~0: ', ~0)
-    print('~0 == 1: ', ~0 == 1)
+    print('~0 == -1: ', ~0 == -1)
+    print('~-1 ', ~-1)
+    print('~~0 ', ~~0)
     print('bin(~0) ', bin(~0))
+    print('bin(-1) ', bin(-1))    
     print('bool(~0) ', bool(~0))
-    print('bool(bin(~0)) ', bool(bin(~0)))
+    print('bool(-1) ', bool(-1))
+    # print('bool(bin(~0)) ', bool(bin(~0)))
+    nl()
     print('invert(0) ', invert(0))
     print('invert(~0) ', invert(~0))
-    print('Beware inverting python logical ~0 !' )
-    nl()
-
-    print('bform again, with some manipulations.')
-    nl()
-    print(bform(int(0b0101011101111001110001110)))
-    print(bform(invert(int(0b0101011101111001110001110)), 24))
-    # print('bf will print 23 blen, lose leading 0->1')
-    print(bform(invert(int(0b0101011101111001110001110))), '   blength becomes 23')
     nl()
     
     print('bitlength(0) ', bit_length(0))
     print('bitlength(1) ', bit_length(1))
-    print('max(bit_length(0), 1) ', max(bit_length(0), 1))
-    print('make_bit_mask(0) ', bin(make_bit_mask(0)))
-    print('0^make_bit_mask(0) ', bin(0^make_bit_mask(0)))
-    print('0^make_bit_mask(0, blength=4) ', bin(make_bit_mask(0, blength=4)))
-    nl()
-                    
-    print('The End.')
     nl()
     
+    print('make_bitmask_for(0)    ', bin(make_bitmask_for(0)))
+    print('1^make_bitmask_for(0)  ', bin(1^make_bitmask_for(0)))
+    print('make_bitmask(0))       ', bin(make_bitmask(0)))
+    print('make_bitmask(4))       ', bin(make_bitmask(4)))
+    print('1^make_bitmask(4)      ', bin(1^make_bitmask(4)))
+    print('1^int(0b1111)          ', bin(1^int(0b1111))) 
+    nl()
+  
+    nl()
+    print('The End.')
+    nl()
     
 

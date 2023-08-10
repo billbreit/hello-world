@@ -5,29 +5,29 @@ to help me learn about GitHub projects.  My focal areas are:
 
 - Binary Logic applications
 
-- Cross-Python libraries, include micropython, some Circuit Python and
-  any other worthy Python dialect.
+- Cross-Python libraries, including core Python and micropython, and
+  when possible Circuit Python, or any other worthy Python dialect.
 
-The first example is Bit Buddy (?), a ones-complement wrapper in a 
-two-complement world - for debugging, not deployment.  The development 
-phase is maybe early beta.
+The first example is BitLogic, a ones-complement wrapper in a 
+two-complement world - for debugging, not deployment.  It may provide
+a foundation for developing what I call "binary logic applications".
+
+The development phase is maybe early beta.
 
 Known compatibility is Python v3.9 and micropython v1.20.0, running on
-a Pico.  Not sure about CircuitPython, I maybe be able to get it working.
+a Pico.  Not sure about CircuitPython, I haven't been able to get it
+working yet.
 
 To run a __name__=='__main__': style test script, start up a decent
-terminal, change directory to bitbuddy.py and run: 
+terminal, change current directory to point to bitlogic.py and run: 
 
-python bitbuddy.py
+python bitlogic.py
 
 On the Pico using gc.mem_free, the basic classes and functions consume
 about 1.6K ( to the start of the test script ) .  The entire test script
 consumes about 20K ( total memory at the end of the script).
 
-Note: I'm kind of laughing at myself.  I thought there was only one Python app
-called "bitbuddy", with no activity in ten years.  I found the topic search
-page and discovered about 30 of them.  Maybe 'bitfandango' or 'bangmybits'
-or almost anything other than 'bitbuddy' ? :-)  
+ 
 
 https://gitgub.com/billbreit/hello-world
 
